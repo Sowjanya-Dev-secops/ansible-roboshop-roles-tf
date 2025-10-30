@@ -1,0 +1,11 @@
+- name: copy {{ component }} services
+  ansible.builtin.template:
+    src: "{{ component }}.service.j2"
+    dest: "/etc/systemd/system/{{ component }}.service"
+  notify: daemon_reload
+  
+- name: start and enable the catalouge
+  ansible.builtin.service:
+    name: "{{ component }}"
+    state: started
+    enabled: true
