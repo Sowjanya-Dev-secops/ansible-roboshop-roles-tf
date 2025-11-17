@@ -1,47 +1,21 @@
-  - name: install mysql server
-    ansible.builtin.package:
-      name: mysql-server
-      state: present
+- name: install mysql server
+  ansible.builtin.package:
+    name: mysql-server
+    state: present
 
-  - name: start and enabled mysql
-    ansible.builtin.service:
-     name: mysqld
-     state: started
-     enabled: yes
+- name: start and enable mysql
+  ansible.builtin.service:
+    name: mysqld
+    state: started
+    enabled: yes
 
-  - name: install mysql python libraries
-    ansible.builtin.pip:
-      executable: pip3.9
-      name: "{{ item }}"
-    loop:
-    - botocore
-    - boto3
+- name: install mysql python libraries
+  ansible.builtin.pip:
+    executable: pip3.9
+    name: "{{ item }}"
+  loop:
+  - botocore
+  - boto3
 
-  - name: set mysql root password if not already set
-    ansible.builtin.shell: |
-     mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ MYSQL_ROOT_PASSWORD }}';"
-    args:
-     executable: /bin/bash
-     register: set_root
-     failed_when: set_root.rc not in [0,1]
-
-  - name: allow remote mysql connections
-    ansible.builtin.lineinfile:
-     path: /etc/my.cnf
-     regexp: '^bind-address'
-     line: 'bind-address = 0.0.0.0'
-
-  - name: restart mysql
-    ansible.builtin.service:
-     name: mysqld
-     state: restarted
-
-  # - name: wait for mysql to be ready
-  #   ansible.builtin.wait_for:
-  #    port: 3306
-  #    delay: 5
-  #    timeout: 60
-
-  # - name: setup root password
-  #   ansible.builtin.command: mysql_secure_installation --set-root-pass {{ MYSQL_ROOT_PASSWORD }}
-      
+- name: setup root password
+  ansible.builtin.command: mysql_secure_installation --set-root-pass {{ MYSQL_ROOT_PASSWORD }}
