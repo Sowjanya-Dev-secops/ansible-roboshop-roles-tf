@@ -1,36 +1,39 @@
-- name: app setup 
+- name: app setup
   ansible.builtin.import_role:
     name: common
     tasks_from: app-setup.yaml
+  tags:
+  - deployment
 
-- name: install node js
-  ansible.builtin.import_role:
-   name: common
-   tasks_from: nodejs.yaml
+- name: nodejs setup
+  #ansible.builtin.import_role:
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: nodejs.yaml
+  tags:
+  - deployment
 
 - name: copy mongo repo
   ansible.builtin.copy:
     src: mongo.repo
-    dest: /etc/yum.repos.d/mongo.repo 
+    dest: /etc/yum.repos.d/mongo.repo
 
 - name: install mongodb client
   ansible.builtin.package:
     name: mongodb-mongosh
     state: present
 
-- name: connect to mongodb catalouge
-  ansible.builtin.command: mongosh {{ MONGODB_HOST }} --quiet --eval "db.getMongo().getDBNames().indexOf('catalouge')"
-  register: catalouge_output
+- name: connnect to mongodb catalogue
+  ansible.builtin.command: mongosh {{ MONGODB_HOST }} --quiet --eval "db.getMongo().getDBNames().indexOf('catalogue')"
+  register: catalogue_output
 
-# - name: print catalouge_output
-#   ansible.builtin.debug:
-#     msg: "{{ catalouge_output }}"
-
-- name: load product into mongodb
+- name: load products into mongodb
   ansible.builtin.shell: mongosh --host {{ MONGODB_HOST }} </app/db/master-data.js
-  when: catalouge_output.stdout | int < 0
-      
-- name: system setup 
+  when: catalogue_output.stdout | int < 0
+
+- name: app setup
   ansible.builtin.import_role:
     name: common
     tasks_from: system-setup.yaml
+  tags:
+  - deployment
